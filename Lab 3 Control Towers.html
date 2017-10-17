@@ -80,7 +80,7 @@
         }
     }).addTo(mymap);
 
-    //STATE BOUNDARY BULLSHIT GOES HERE
+    //STATE BOUNDARY GOES HERE
     colors = chroma.scale('Greens').mode('hsl').colors(7);
 
     function setColor(count) {
@@ -106,22 +106,57 @@
         };
     }
 
-    //BELOW THIS IS MOSTLY GARBAGE/TESTING
 
+    //L.geoJson.ajax("Assets/us-states.geojson",{
+    //    style: style,
+    //    onEachFeature: function (feature, layer) {
+    //       layer.bindPopup(feature.properties.count + ' ' + 'airports in' + ' ' + feature.properties.name)
 
-    //BELOW THIS IS GOOD STUFF
+     //   }
+    //}).addTo(mymap);
 
-    L.geoJson.ajax("Assets/us-states.geojson",{
-        style: style,
-        onEachFeature: function (feature, layer) {
-            layer.bindPopup(feature.properties.count + ' ' + 'airports in' + ' ' + feature.properties.name)
+    function highlightFeature(e) {
+        var layer = e.target;
 
+        layer.setStyle({
+            weight: 5,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.7
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
         }
-    }).addTo(mymap);
+
+        info.update(layer.feature.properties);
+    }
+
+    var geojson;
+
+    function resetHighlight(e) {
+        geojson.resetStyle(e.target);
+        info.update();
+    }
 
     function zoomToFeature(e) {
         mymap.fitBounds(e.target.getBounds());
     }
+
+    function onEachFeature(feature, layer) {
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight,
+            click: zoomToFeature
+        });
+        layer.bindPopup(feature.properties.count + ' ' + 'airports in' + ' ' + feature.properties.name)
+
+    }
+
+    geojson = L.geoJson.ajax("Assets/us-states.geojson", {
+        style: style,
+        onEachFeature: onEachFeature
+    }).addTo(mymap);
 
     //Legend goes here
     var legend = L.control({position: 'bottomright'});
@@ -149,10 +184,6 @@
 
     //Scale Bar
     L.control.scale({position: 'bottomleft'}).addTo(mymap);
-
-
-
-
 
 </script>
 </body>
